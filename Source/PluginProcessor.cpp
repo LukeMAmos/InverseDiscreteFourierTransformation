@@ -142,6 +142,9 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
     if(recordingOn)
         recordIncoming(buffer);
     
+    //Clear the the current input buffer
+    buffer.clear();
+    
     //If a new recording has just been completed then we need to pass the data through into the FFT then IFFT and then allow the user to play it back
     if(newRecording){
         
@@ -153,12 +156,9 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
     }
     
     //If the audio is in its playback state then clear the buffer and pass the output buffer through to the main audio buffer
-    if(playbackOn){
-        //Clear the the current input buffer
-        buffer.clear(); 
+    if(playbackOn)
         playbackAudio(buffer);
         
-    }
 
 }
 
