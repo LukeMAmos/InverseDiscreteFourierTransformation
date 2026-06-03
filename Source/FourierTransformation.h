@@ -218,7 +218,7 @@ public:
         finalResultsOut = calcIFFT(inputComplex);
         
     }
-    
+    //The IFFT helper fuction takes all the complex numbers inputted and does the opposite of what the FFT does , this is due to the angle sign switch in the k loop, meaning that instead of conbverting from time domain to frequency it converts from frequency to time , the only issue is that it the calculation is performed in the complex plane , we then use the calcIFFT function to take the real numer for each bin and convert to a sample 
     std::vector<Complex> calcIFFTHelper(std::vector<Complex> &input){
         
         //Base case if the size of the input is 1 then return itself as a complex number and triggers the butterfly calculations one caller level up
