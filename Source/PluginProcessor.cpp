@@ -138,19 +138,25 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     
-    if(recordingOn){
-        
+    //If the recording button has just been pressed or is still in its on state record the incoming audio data
+    if(recordingOn)
         recordIncoming(buffer);
-        
-    }
-   
     
+    //If a new recording has just been completed then we need to pass the data through into the FFT then IFFT and then allow the user to play it back
+    if(newRecording){
+        
+        outputBuffer = recordedSamples; //For building purposes we are just directly passing the samples through
+        
+        
+        newRecording = false;
+        transferFuncComplete = true;
+    }
+    
+    //If the audio is in its playback state then clear the buffer and pass the output buffer through to the main audio buffer
     if(playbackOn){
-        
         //Clear the the current input buffer
-        for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-                buffer.clear (i, 0, buffer.getNumSamples());
-        
+        buffer.clear(); 
+        playbackAudio(buffer);
         
     }
 
@@ -229,18 +235,19 @@ void InverseDiscreteFourierTransformationAudioProcessor::recordIncoming(juce::Au
     const float* rightPtr = nullptr;
     
     if(input.getNumChannels() > 1)
-        auto rightPtr = input.getReadPointer(1);
+         rightPtr = input.getReadPointer(1);
     
     for(int i = 0; i < input.getNumSamples(); i++){
         
         if(counterPosition >= numSamplesNeeded ){//The buffer is fully filled and no longe needs any more samples inputted
-            
+            DBG("Recording finished");
             recordingOn = false;
+            newRecording = true;
             counterPosition = 0;
             return;
         }
         
-        if(input.getNumChannels() > 0)
+        if(input.getNumChannels() > 1)
             recordedSamples.push_back((leftPtr[i] + rightPtr[i]) / 2 );
         else
             recordedSamples.push_back(leftPtr[i]);
@@ -252,17 +259,18 @@ void InverseDiscreteFourierTransformationAudioProcessor::recordIncoming(juce::Au
 
 void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(juce::AudioBuffer<float>& input){
     
+    
     for(int i = 0; i < input.getNumSamples(); i++){
         
         if(counterPosition >= numSamplesNeeded ){//The buffer is fully filled and no longe needs any more samples inputted
-            
+            DBG("Playback finished");
             playbackOn = false;
             counterPosition = 0;
             return;
         }
         
         for(int ch = 0 ; ch < input.getNumChannels(); ch++){
-            input.setSample(ch, i, outputBuffer[counterPosition]);
+            input.setSample(ch, i, recordedSamples[counterPosition]);
         }
         counterPosition++;
     }

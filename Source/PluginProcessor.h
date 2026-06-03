@@ -75,6 +75,7 @@ private:
     
     // values used to start and end recording and int values to track current position in buffer
     bool recordingOn = false;
+    bool newRecording = false; 
     bool playbackOn = false;
     bool transferFuncComplete = false;
     
