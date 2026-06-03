@@ -21,6 +21,7 @@ InverseDiscreteFourierTransformationAudioProcessor::InverseDiscreteFourierTransf
                      #endif
                        )
 #endif
+, apvts(*this, nullptr, "Parameters", createParameterLayout())
 {
 }
 
@@ -95,6 +96,8 @@ void InverseDiscreteFourierTransformationAudioProcessor::prepareToPlay (double s
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    
+    numSamplesNeeded = 5 * sampleRate; // 5 seconds * sampleRate
 }
 
 void InverseDiscreteFourierTransformationAudioProcessor::releaseResources()
@@ -135,27 +138,18 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
+    if(recordingOn){
+        
+        
     }
+   
+    
+    if(playbackOn){
+        
+        
+        
+    }
+
 }
 
 //==============================================================================
@@ -183,9 +177,56 @@ void InverseDiscreteFourierTransformationAudioProcessor::setStateInformation (co
     // whose contents will have been created by the getStateInformation() call.
 }
 
+
+//Use the APVTS to pass thorugh parameters to control how many high magnitude frequencies get played back
+juce::AudioProcessorValueTreeState::ParameterLayout InverseDiscreteFourierTransformationAudioProcessor::createParameterLayout(){
+    
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+
+    return {params.begin() , params.end()};
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new InverseDiscreteFourierTransformationAudioProcessor();
+}
+
+
+void InverseDiscreteFourierTransformationAudioProcessor::onStartRecord(){
+    DBG("Start Recording");
+    recordingOn = true;
+}
+
+
+void InverseDiscreteFourierTransformationAudioProcessor::onStartPlayback(){
+    DBG("Start Playback");
+    
+    if(transferFuncComplete)
+        playbackOn = true;
+    else
+        DBG("Not Ready"); 
+}
+
+
+void InverseDiscreteFourierTransformationAudioProcessor::recordIncoming(juce::AudioBuffer<float>& input){
+    
+    //Sum incoming audio to mono as the FFT is a monoFFT
+    
+    auto left = input.getReadPointer(0);
+    auto right = input.getReadPointer(1);
+    
+    for(int i = 0; i < input.getNumSamples(); i++){
+        
+        recordedSamples.push_back((left[i] + right[i]) / 2 );
+        counterPosition++; 
+    }
+        
+}
+
+void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(){
+    
+    
+    
 }

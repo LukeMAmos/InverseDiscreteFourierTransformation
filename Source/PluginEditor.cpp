@@ -16,6 +16,13 @@ InverseDiscreteFourierTransformationAudioProcessorEditor::InverseDiscreteFourier
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
+    
+    addAndMakeVisible(startRecord);
+    startRecord.onClick = [this](){audioProcessor.onStartRecord(); };
+
+    addAndMakeVisible(startPlayback);
+    startPlayback.onClick = [this](){audioProcessor.onStartPlayback() ; };
+
 }
 
 InverseDiscreteFourierTransformationAudioProcessorEditor::~InverseDiscreteFourierTransformationAudioProcessorEditor()
@@ -37,4 +44,8 @@ void InverseDiscreteFourierTransformationAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+    
+    startRecord.setBounds(100, 100, 50, 50);
+    startPlayback.setBounds(300, 100, 50, 50);
 }
+

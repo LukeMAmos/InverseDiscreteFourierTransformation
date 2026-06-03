@@ -24,10 +24,18 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+
+    
 private:
+    
+
+    
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     InverseDiscreteFourierTransformationAudioProcessor& audioProcessor;
+    
+    juce::TextButton startRecord{"Rec"};
+    juce::TextButton startPlayback{"Play"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InverseDiscreteFourierTransformationAudioProcessorEditor)
 };

@@ -54,10 +54,33 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
+    
+    void onStartRecord();
+    void onStartPlayback();
+    
+    juce::AudioProcessorValueTreeState apvts;
+    
 private:
+    
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    
+    void recordIncoming(juce::AudioBuffer<float>& input);
+    void playbackAudio(); 
+    
     FFT fourierTransform;
-    IFFT inversseFourierTransform; 
+    IFFT inversseFourierTransform;
+    
+    std::vector<float> recordedSamples;
+    std::vector<float> outputBuffer;
+    
+    // values used to start and end recording and int values to track current position in buffer
+    bool recordingOn = false;
+    bool playbackOn = false;
+    bool transferFuncComplete = false;
+    
+    int counterPosition = 0;
+    int numSamplesNeeded; //This is calculated at the start using 5seconds * the sampleRate , this ensures that we only ever record 5 seconds of audio
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InverseDiscreteFourierTransformationAudioProcessor)
 };
