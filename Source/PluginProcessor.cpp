@@ -225,25 +225,47 @@ void InverseDiscreteFourierTransformationAudioProcessor::recordIncoming(juce::Au
     
     //Sum incoming audio to mono as the FFT is a monoFFT
     
-    auto left = input.getReadPointer(0);
-    auto right = input.getReadPointer(1);
+    auto leftPtr = input.getReadPointer(0);
+    const float* rightPtr = nullptr;
+    
+    if(input.getNumChannels() > 1)
+        auto rightPtr = input.getReadPointer(1);
     
     for(int i = 0; i < input.getNumSamples(); i++){
         
         if(counterPosition >= numSamplesNeeded ){//The buffer is fully filled and no longe needs any more samples inputted
             
             recordingOn = false;
+            counterPosition = 0;
             return;
         }
-        recordedSamples.push_back((left[i] + right[i]) / 2 );
-        counterPosition++; 
+        
+        if(input.getNumChannels() > 0)
+            recordedSamples.push_back((leftPtr[i] + rightPtr[i]) / 2 );
+        else
+            recordedSamples.push_back(leftPtr[i]);
+        
+        counterPosition++;
     }
         
 }
 
 void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(juce::AudioBuffer<float>& input){
     
-
+    for(int i = 0; i < input.getNumSamples(); i++){
+        
+        if(counterPosition >= numSamplesNeeded ){//The buffer is fully filled and no longe needs any more samples inputted
+            
+            playbackOn = false;
+            counterPosition = 0;
+            return;
+        }
+        
+        for(int ch = 0 ; ch < input.getNumChannels(); ch++){
+            input.setSample(ch, i, outputBuffer[counterPosition]);
+        }
+        counterPosition++;
+    }
     
     
 }
