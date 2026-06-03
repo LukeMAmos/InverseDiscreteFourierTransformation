@@ -12,6 +12,7 @@
 #include "FourierTransformation.h"
 
 //==============================================================================
+//The goal of this process is to record 5 seconds of audio , split the audio up into multiple shorter buffers , perform a FFT on each of the buffers , we can then take the 5 frequency bins with the largest magnitude for each shorter buffer , convert all of the 
 /**
 */
 class InverseDiscreteFourierTransformationAudioProcessor  : public juce::AudioProcessor
@@ -55,6 +56,8 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    FFT fourierTransform;
+    IFFT inversseFourierTransform; 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InverseDiscreteFourierTransformationAudioProcessor)
 };
