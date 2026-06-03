@@ -98,6 +98,21 @@ void InverseDiscreteFourierTransformationAudioProcessor::prepareToPlay (double s
     // initialisation that you need..
     
     numSamplesNeeded = 5 * sampleRate; // 5 seconds * sampleRate
+    
+    //Setting up the transfer functions
+    fftSize = 2048;
+    fourierTransform.prepare(fftSize, sampleRate);
+    inversseFourierTransform.prepare(fftSize, sampleRate);
+    
+    finalAudioIFFT.resize(5 * sampleRate, 0.0f);
+    
+    //Setting up the windowing function
+    synHannWindow.resize(fftSize, 0.0f);
+    for(int i = 0 ; i < synHannWindow.size() ; i ++){
+        
+        synHannWindow[i] = 0.5 * (1 - std::cos((2 * M_PI) * i / (synHannWindow.size()-1)));
+        
+    }
 }
 
 void InverseDiscreteFourierTransformationAudioProcessor::releaseResources()
@@ -148,8 +163,7 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
     //If a new recording has just been completed then we need to pass the data through into the FFT then IFFT and then allow the user to play it back
     if(newRecording){
         
-        outputBuffer = recordedSamples; //For building purposes we are just directly passing the samples through
-        
+        outputBuffer = transformProcess(recordedSamples , numTopMag); //For building purposes we are just directly passing the samples through
         
         newRecording = false;
         transferFuncComplete = true;
@@ -203,6 +217,75 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new InverseDiscreteFourierTransformationAudioProcessor();
 }
 
+std::vector<float> InverseDiscreteFourierTransformationAudioProcessor::transformProcess(std::vector<float> input, int numTopMag ){
+    
+    std::vector<float> tempAudioHolder;
+    tempAudioHolder.resize(fftSize, 0.0f);
+    
+    std::vector<Complex> tempComplexBinHolder;
+    tempComplexBinHolder.resize(fftSize, {0.0f , 0.0f});
+    
+    finalAudioIFFT.clear();
+    finalAudioIFFT.resize(input.size(), 0.0f);
+    
+    int hopSize = fftSize/2;
+    //This process needs to take the samples inputted split them up into 216 windows of 2048 samples , then  process each of these samples individually first through the FFT, then get the magnitude of each of the bins in the first half of the FFT , only keep the top N bins and their mirrored counterpart then run this data back through the IFFT. After getting the audio samples back out need to apply a windowing function to the audio samples
+    
+    //Instead of having an array and splitting it up into 216 pieces , just take 2048 chunks off each time and move a pointer along
+    //We need to ensure we have the overlap though so we add half fftsize (for 50% overlap) to the tempBufferPos each time
+    
+    for(int tempBufferPos = 0; tempBufferPos + fftSize <= input.size(); tempBufferPos+=hopSize ){
+        
+        //Filling the TempAudioHolder with 2048 samples
+        for(int i = 0; i <fftSize ; i++ ){
+            tempAudioHolder[i] = input[tempBufferPos+i];
+        }
+        
+        //Pass the temp Audio Holder through to the FFT and save the results
+        tempComplexBinHolder = fourierTransform.nonRealTimeProcess(tempAudioHolder);
+        std::vector<std::pair<float,int>> magWithIndex;
+        
+        //Get the magnitudes of each of the lower half bins remember to keep then conjugate mirror as well
+        for(int i = 0; i < fftSize/2 ; i++){
+            auto mag = fourierTransform.getMagnitude(i);
+            magWithIndex.push_back({mag , i});
+        }
+        //sort the pairs and keep the top N values
+        std::sort(magWithIndex.begin() , magWithIndex.end() , [](auto& a , auto& b){ return a.first > b.first;});
+        
+        //Zeroed bin array of complex number
+        std::vector<Complex> zeroBinned;
+        zeroBinned.resize(fftSize , {0.0f , 0.0f});
+        //Now replace the top N values from the magindex in the zerobinned array with their correct complex number remembering to also change its conjugate mirror
+        
+        for(int i = 0 ; i < numTopMag ; i++ ){
+            auto k = magWithIndex[i].second;
+            //Its value
+            zeroBinned[magWithIndex[i].second] = tempComplexBinHolder[magWithIndex[i].second];
+            //Its mirror, protecting against trying to add a mirror to the DC value
+            if(k != 0 && k != fftSize/2){
+                zeroBinned[fftSize - k] = {tempComplexBinHolder[k].real,-tempComplexBinHolder[k].imaginary};
+            }
+        }
+        
+        //Now the zero binned vector needs to be processed by the IFFT
+        
+        inversseFourierTransform.process(zeroBinned); 
+        std::vector<float> tempAudioSamplesRes = inversseFourierTransform.getResults();
+        
+        //apply the windowing function
+        for(int i = 0 ; i < tempAudioSamplesRes.size() ; i++){
+            tempAudioSamplesRes[i] *= synHannWindow[i] ;
+            //Now need to add this data to the main results buffer
+            finalAudioIFFT[tempBufferPos+i] += tempAudioSamplesRes[i];
+        }
+        
+        
+        
+    }
+    
+    return finalAudioIFFT;
+}
 
 void InverseDiscreteFourierTransformationAudioProcessor::onStartRecord(){
     DBG("Start Recording");
@@ -270,7 +353,7 @@ void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(juce::Aud
         }
         
         for(int ch = 0 ; ch < input.getNumChannels(); ch++){
-            input.setSample(ch, i, recordedSamples[counterPosition]);
+            input.setSample(ch, i, outputBuffer[counterPosition]);
         }
         counterPosition++;
     }

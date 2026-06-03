@@ -65,8 +65,16 @@ private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     void recordIncoming(juce::AudioBuffer<float>& input);
-    void playbackAudio(juce::AudioBuffer<float>& input); 
+    void playbackAudio(juce::AudioBuffer<float>& input);
     
+    std::vector<float> transformProcess(std::vector<float> input , int numTopMag);
+    std::vector<float> synHannWindow; 
+    
+    std::vector<float> finalAudioIFFT;
+
+    int numTopMag = 1024;
+    
+    int fftSize;
     FFT fourierTransform;
     IFFT inversseFourierTransform;
     

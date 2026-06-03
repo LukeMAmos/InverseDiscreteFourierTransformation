@@ -108,6 +108,24 @@ public:
         }
     }
     
+    std::vector<Complex> nonRealTimeProcess(std::vector<float>& inputSamples , bool halfBins = false){
+        
+        std::vector<float> windowedSamples = inputSamples;
+        
+        for(int i = 0 ; i < windowedSamples.size() ; i++){
+            
+            windowedSamples[i] *= windowing[i];
+        }
+        
+        complexOut = calcFFT(windowedSamples);
+        
+        if(halfBins){
+            complexOut.resize(fftSize / 2); //Only want the first half of the fft the rest is unwanted data
+        }
+        
+        return complexOut;
+    }
+    
     std::vector<Complex> calcFFT(std::vector<float> &input){
         
         //Base case if the size of the input is 1 then return itself as a complex number and triggers the butterfly calculations one caller level up
