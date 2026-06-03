@@ -137,15 +137,19 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
     if(recordingOn){
         
+        recordIncoming(buffer);
         
     }
    
     
     if(playbackOn){
         
+        //Clear the the current input buffer
+        for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+                buffer.clear (i, 0, buffer.getNumSamples());
         
         
     }
@@ -196,17 +200,24 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 void InverseDiscreteFourierTransformationAudioProcessor::onStartRecord(){
     DBG("Start Recording");
-    recordingOn = true;
+    if(recordingOn)
+        DBG("Already recording");
+    else
+        recordingOn = true;
 }
 
 
 void InverseDiscreteFourierTransformationAudioProcessor::onStartPlayback(){
     DBG("Start Playback");
     
-    if(transferFuncComplete)
+    if(transferFuncComplete && !playbackOn)
         playbackOn = true;
-    else
-        DBG("Not Ready"); 
+    else if (!transferFuncComplete)
+        DBG("Not Ready");
+    else if (playbackOn){ // if playback is already on
+        playbackOn = false;
+        DBG("Already playing , stopping playing ");
+    }
 }
 
 
@@ -219,14 +230,20 @@ void InverseDiscreteFourierTransformationAudioProcessor::recordIncoming(juce::Au
     
     for(int i = 0; i < input.getNumSamples(); i++){
         
+        if(counterPosition >= numSamplesNeeded ){//The buffer is fully filled and no longe needs any more samples inputted
+            
+            recordingOn = false;
+            return;
+        }
         recordedSamples.push_back((left[i] + right[i]) / 2 );
         counterPosition++; 
     }
         
 }
 
-void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(){
+void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(juce::AudioBuffer<float>& input){
     
+
     
     
 }

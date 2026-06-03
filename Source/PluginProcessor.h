@@ -65,7 +65,7 @@ private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     void recordIncoming(juce::AudioBuffer<float>& input);
-    void playbackAudio(); 
+    void playbackAudio(juce::AudioBuffer<float>& input); 
     
     FFT fourierTransform;
     IFFT inversseFourierTransform;
