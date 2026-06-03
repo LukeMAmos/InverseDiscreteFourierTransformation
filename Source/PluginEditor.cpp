@@ -15,18 +15,30 @@ InverseDiscreteFourierTransformationAudioProcessorEditor::InverseDiscreteFourier
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (600, 600);
+    setLookAndFeel(&customLookAndFeel);
     
     addAndMakeVisible(startRecord);
-    startRecord.onClick = [this](){audioProcessor.onStartRecord(); };
+    startRecord.onClick = [this](){audioProcessor.onStartRecord(); }; //this is needed here to access the members of the editor class within the function
 
     addAndMakeVisible(startPlayback);
     startPlayback.onClick = [this](){audioProcessor.onStartPlayback() ; };
-
+    
+    
+    addAndMakeVisible(fftSizeSlider);
+    fftSizeSlider.onValueChange = [this](){audioProcessor.parameterChange();};
+    fftSizeSlider.setRange(128, 4096);
+    fftSizeAttach = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "FFTSIZE" , fftSizeSlider);
+    
+    addAndMakeVisible(nSinesSlider);
+    nSinesSlider.onValueChange = [this](){audioProcessor.parameterChange();};
+    nSinesSlider.setRange(1, ((fftSizeSlider.getValue()/2 -1)));
+    nSinesAttach = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "NUMSINE" , nSinesSlider); 
 }
 
 InverseDiscreteFourierTransformationAudioProcessorEditor::~InverseDiscreteFourierTransformationAudioProcessorEditor()
 {
+    setLookAndFeel(nullptr); 
 }
 
 //==============================================================================
@@ -46,5 +58,8 @@ void InverseDiscreteFourierTransformationAudioProcessorEditor::resized()
     
     startRecord.setBounds(100, 100, 50, 50);
     startPlayback.setBounds(300, 100, 50, 50);
+    
+    fftSizeSlider.setBounds(100, 300, 150, 75);
+    nSinesSlider.setBounds(300, 300, 150, 75);
 }
 

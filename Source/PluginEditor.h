@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "CustomLookAndFeel.h"
 
 //==============================================================================
 /**
@@ -33,9 +34,15 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     InverseDiscreteFourierTransformationAudioProcessor& audioProcessor;
+    CustomLookAndFeel customLookAndFeel;
     
     juce::TextButton startRecord{"Rec"};
     juce::TextButton startPlayback{"Play"};
 
+    juce::Slider fftSizeSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> fftSizeAttach;
+    
+    juce::Slider nSinesSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> nSinesAttach; 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InverseDiscreteFourierTransformationAudioProcessorEditor)
 };

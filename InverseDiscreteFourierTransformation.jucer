@@ -4,6 +4,8 @@
               useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="cueYI3" name="InverseDiscreteFourierTransformation">
     <GROUP id="{2B312EB9-971C-41EE-96DD-9AA9096CEC5F}" name="Source">
+      <FILE id="iwb2NW" name="CustomLookAndFeel.h" compile="0" resource="0"
+            file="Source/CustomLookAndFeel.h"/>
       <FILE id="JhKY8o" name="FourierTransformation.h" compile="0" resource="0"
             file="Source/FourierTransformation.h"/>
       <FILE id="tEscce" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -14,6 +16,8 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="u46SMj" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="L5wTLA" name="BitcountPropSingle.ttf" compile="0" resource="1"
+          file="../../../../Documents/Fonts/BitcountPropSingle.ttf"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

@@ -97,14 +97,13 @@ void InverseDiscreteFourierTransformationAudioProcessor::prepareToPlay (double s
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     
-    numSamplesNeeded = 5 * sampleRate; // 5 seconds * sampleRate
+    numSamplesNeeded = nSeconds * sampleRate; // 5 seconds * sampleRate
     
     //Setting up the transfer functions
-    fftSize = 2048;
     fourierTransform.prepare(fftSize, sampleRate);
     inversseFourierTransform.prepare(fftSize, sampleRate);
     
-    finalAudioIFFT.resize(5 * sampleRate, 0.0f);
+    finalAudioIFFT.resize(numSamplesNeeded, 0.0f);
     
     //Setting up the windowing function
     synHannWindow.resize(fftSize, 0.0f);
@@ -206,6 +205,10 @@ void InverseDiscreteFourierTransformationAudioProcessor::setStateInformation (co
 juce::AudioProcessorValueTreeState::ParameterLayout InverseDiscreteFourierTransformationAudioProcessor::createParameterLayout(){
     
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+    
+    params.emplace_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID("FFTSIZE", 1) , "FFTSize" , 128, 4096, 2048));
+    
+    params.emplace_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID("NUMSINE", 1) , "NumSine" , 1, 2047, 10));
 
     return {params.begin() , params.end()};
 }
@@ -359,4 +362,23 @@ void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(juce::Aud
     }
     
     
+}
+
+void InverseDiscreteFourierTransformationAudioProcessor::parameterChange(){
+    
+    fftSize = (int)apvts.getRawParameterValue("FFTSIZE")->load();
+    fourierTransform.prepare(fftSize, getSampleRate());
+    inversseFourierTransform.prepare(fftSize, getSampleRate());
+    
+    numTopMag = (int)apvts.getRawParameterValue("NUMSINE")->load();
+    
+    synHannWindow.resize(fftSize, 0.0f);
+    for(int i = 0 ; i < synHannWindow.size() ; i ++){
+        
+        synHannWindow[i] = 0.5 * (1 - std::cos((2 * M_PI) * i / (synHannWindow.size()-1)));
+        
+    }
+    
+    newRecording = true;
+    playbackOn = false; 
 }

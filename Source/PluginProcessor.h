@@ -57,6 +57,7 @@ public:
     
     void onStartRecord();
     void onStartPlayback();
+    void parameterChange();
     
     juce::AudioProcessorValueTreeState apvts;
     
@@ -67,6 +68,7 @@ private:
     void recordIncoming(juce::AudioBuffer<float>& input);
     void playbackAudio(juce::AudioBuffer<float>& input);
     
+
     std::vector<float> transformProcess(std::vector<float> input , int numTopMag);
     std::vector<float> synHannWindow; 
     
@@ -74,7 +76,8 @@ private:
 
     int numTopMag = 1024;
     
-    int fftSize;
+    int nSeconds = 1; 
+    int fftSize = 2048;
     FFT fourierTransform;
     IFFT inversseFourierTransform;
     
