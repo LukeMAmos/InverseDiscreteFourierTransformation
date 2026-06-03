@@ -4,6 +4,8 @@
               useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="cueYI3" name="InverseDiscreteFourierTransformation">
     <GROUP id="{2B312EB9-971C-41EE-96DD-9AA9096CEC5F}" name="Source">
+      <FILE id="JhKY8o" name="FourierTransformation.h" compile="0" resource="0"
+            file="Source/FourierTransformation.h"/>
       <FILE id="tEscce" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="k3hhlX" name="PluginProcessor.h" compile="0" resource="0"
