@@ -43,6 +43,13 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> fftSizeAttach;
     
     juce::Slider nSinesSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> nSinesAttach; 
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> nSinesAttach;
+    
+    juce::Slider inputMetSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> inputMetAttach;
+    
+    juce::Slider outputMetSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> outputMetAttach;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InverseDiscreteFourierTransformationAudioProcessorEditor)
 };

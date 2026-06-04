@@ -99,54 +99,141 @@ public:
         return bitcount.withHeight(18.0f);
     }
     
+    void drawLinearSlider (Graphics& g, int x, int y, int width, int height,
+                                           float sliderPos,
+                                           float minSliderPos,
+                                           float maxSliderPos,
+                                           const Slider::SliderStyle style, Slider& slider) override
+    {
+        if (slider.isBar())
+        {
+            g.setColour (slider.findColour (Slider::trackColourId));
+            g.fillRect (slider.isHorizontal() ? Rectangle<float> (static_cast<float> (x), (float) y + 0.5f, sliderPos - (float) x, (float) height - 1.0f)
+                                              : Rectangle<float> ((float) x + 0.5f, sliderPos, (float) width - 1.0f, (float) y + ((float) height - sliderPos)));
+
+            drawLinearSliderOutline (g, x, y, width, height, style, slider);
+        }
+        else
+        {
+            auto isTwoVal   = (style == Slider::SliderStyle::TwoValueVertical   || style == Slider::SliderStyle::TwoValueHorizontal);
+            auto isThreeVal = (style == Slider::SliderStyle::ThreeValueVertical || style == Slider::SliderStyle::ThreeValueHorizontal);
+
+            auto trackWidth = jmin (6.0f, slider.isHorizontal() ? (float) height * 0.25f : (float) width * 0.25f);
+
+            Point<float> startPoint (slider.isHorizontal() ? (float) x : (float) x + (float) width * 0.5f,
+                                     slider.isHorizontal() ? (float) y + (float) height * 0.5f : (float) (height + y));
+
+            Point<float> endPoint (slider.isHorizontal() ? (float) (width + x) : startPoint.x,
+                                   slider.isHorizontal() ? startPoint.y : (float) y);
+            
+            auto xStep = (endPoint.x - startPoint.x)/ 10.0f;
+            auto yStep = (endPoint.y - startPoint.y)/10.0f;
+            int maxPos;
+            
+            if(slider.isHorizontal())
+                maxPos = jmap(sliderPos, startPoint.x, endPoint.x, 0.0f, 10.0f);
+            else
+                maxPos = jmap(sliderPos, startPoint.y, endPoint.y, 0.0f, 10.0f);
+            
+            for(int i = 0 ; i < 10 ; i++){
+                
+                Point<float> dotPoint {startPoint.x + (i * xStep) , startPoint.y + (i * yStep)};
+                
+                if(i <= maxPos){
+                    g.setColour (juce::Colours::grey.withBrightness(0.2 + (maxPos/10.0f)));
+                    g.fillEllipse (Rectangle<float> (trackWidth, trackWidth).withCentre (dotPoint));
+                }else {
+                    g.setColour (juce::Colours::grey.withBrightness(0.15));
+                    g.fillEllipse (Rectangle<float> (trackWidth, trackWidth).withCentre (dotPoint));
+                }
+                
+            }
+
+            //Two value and threeval value handling situations 
+            Path valueTrack;
+            Point<float> minPoint, maxPoint, thumbPoint;
+
+            if (isTwoVal || isThreeVal)
+            {
+                minPoint = { slider.isHorizontal() ? minSliderPos : (float) width * 0.5f,
+                             slider.isHorizontal() ? (float) height * 0.5f : minSliderPos };
+
+                if (isThreeVal)
+                    thumbPoint = { slider.isHorizontal() ? sliderPos : (float) width * 0.5f,
+                                   slider.isHorizontal() ? (float) height * 0.5f : sliderPos };
+
+                maxPoint = { slider.isHorizontal() ? maxSliderPos : (float) width * 0.5f,
+                             slider.isHorizontal() ? (float) height * 0.5f : maxSliderPos };
+            }
+
+            auto thumbWidth = getSliderThumbRadius (slider);
+
+            valueTrack.startNewSubPath (minPoint);
+            valueTrack.lineTo (isThreeVal ? thumbPoint : maxPoint);
+            g.setColour (slider.findColour (Slider::trackColourId));
+            g.strokePath (valueTrack, { trackWidth, PathStrokeType::curved, PathStrokeType::rounded });
+
+            if (! isTwoVal && isThreeVal)
+            {
+                g.setColour (slider.findColour (Slider::thumbColourId));
+                g.fillEllipse (Rectangle<float> (static_cast<float> (thumbWidth), static_cast<float> (thumbWidth)).withCentre (isThreeVal ? thumbPoint : maxPoint));
+            }
+
+            if (isTwoVal || isThreeVal)
+            {
+                auto sr = jmin (trackWidth, (slider.isHorizontal() ? (float) height : (float) width) * 0.4f);
+                auto pointerColour = slider.findColour (Slider::thumbColourId);
+
+                if (slider.isHorizontal())
+                {
+                    drawPointer (g, minSliderPos - sr,
+                                 jmax (0.0f, (float) y + (float) height * 0.5f - trackWidth * 2.0f),
+                                 trackWidth * 2.0f, pointerColour, 2);
+
+                    drawPointer (g, maxSliderPos - trackWidth,
+                                 jmin ((float) (y + height) - trackWidth * 2.0f, (float) y + (float) height * 0.5f),
+                                 trackWidth * 2.0f, pointerColour, 4);
+                }
+            }
+
+            if (slider.isBar())
+                drawLinearSliderOutline (g, x, y, width, height, style, slider);
+        }
+    }
+    
     void  drawRotarySlider (Graphics& g, int x, int y, int width, int height, float sliderPos,
                                            const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider) override
     {
-        auto outline = slider.findColour (Slider::rotarySliderOutlineColourId);
-        auto fill    = slider.findColour (Slider::rotarySliderFillColourId);
 
         auto bounds = Rectangle<int> (x, y, width, height).toFloat().reduced (10);
 
         auto radius = jmin (bounds.getWidth(), bounds.getHeight()) / 2.0f;
         auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+        auto angleStep = (rotaryEndAngle - rotaryStartAngle)/10.0f;
+        
         auto lineW = jmin (8.0f, radius * 0.5f);
         auto arcRadius = radius - lineW * 0.5f;
+        
+        int maxPosition = (int)(sliderPos * 10);
+        
 
-        Path backgroundArc;
-        backgroundArc.addCentredArc (bounds.getCentreX(),
-                                     bounds.getCentreY(),
-                                     arcRadius,
-                                     arcRadius,
-                                     0.0f,
-                                     rotaryStartAngle,
-                                     rotaryEndAngle,
-                                     true);
-
-        g.setColour (outline);
-        g.strokePath (backgroundArc, PathStrokeType (lineW, PathStrokeType::curved, PathStrokeType::rounded));
-
-        if (slider.isEnabled())
-        {
-            Path valueArc;
-            valueArc.addCentredArc (bounds.getCentreX(),
-                                    bounds.getCentreY(),
-                                    arcRadius,
-                                    arcRadius,
-                                    0.0f,
-                                    rotaryStartAngle,
-                                    toAngle,
-                                    true);
-
-            g.setColour (fill);
-            g.strokePath (valueArc, PathStrokeType (lineW, PathStrokeType::curved, PathStrokeType::rounded));
+        //drawing dots
+        for(int i = 0 ; i < 10 ; i++){
+            auto dotAngle = rotaryStartAngle + (i * angleStep);
+            
+            Point<float> dotPoint (bounds.getCentreX() + arcRadius * std::cos (dotAngle - MathConstants<float>::halfPi),
+                                   bounds.getCentreY() + arcRadius * std::sin (dotAngle - MathConstants<float>::halfPi));
+            
+            if(i <= maxPosition){
+                g.setColour (juce::Colours::grey.withBrightness(0.2 + sliderPos));
+                g.fillEllipse (Rectangle<float> (lineW, lineW).withCentre (dotPoint));
+            }else {
+                g.setColour (juce::Colours::grey.withBrightness(0.15));
+                g.fillEllipse (Rectangle<float> (lineW, lineW).withCentre (dotPoint));
+            }
+            
         }
-
-        auto thumbWidth = lineW * 2.0f;
-        Point<float> thumbPoint (bounds.getCentreX() + arcRadius * std::cos (toAngle - MathConstants<float>::halfPi),
-                                 bounds.getCentreY() + arcRadius * std::sin (toAngle - MathConstants<float>::halfPi));
-
-        g.setColour (slider.findColour (Slider::thumbColourId));
-        g.fillEllipse (Rectangle<float> (thumbWidth, thumbWidth).withCentre (thumbPoint));
+        
     }
 
     
@@ -198,7 +285,7 @@ public:
             g.drawRoundedRectangle (bounds, cornerSize, 1.0f);
         }
     }
-
+    
     
 private:
     

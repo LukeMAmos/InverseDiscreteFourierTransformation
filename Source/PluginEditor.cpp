@@ -37,6 +37,16 @@ InverseDiscreteFourierTransformationAudioProcessorEditor::InverseDiscreteFourier
     nSinesSlider.setRange(1, ((fftSizeSlider.getValue()/2 -1)));
     nSinesSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     nSinesAttach = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "NUMSINE" , nSinesSlider);
+    
+    addAndMakeVisible(inputMetSlider);
+    inputMetSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    inputMetSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, 100, 50);
+    //inputMetAttach;
+    
+    addAndMakeVisible(outputMetSlider);
+    outputMetSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    outputMetSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, 100, 50);
+    //outputMetAttach;
 }
 
 InverseDiscreteFourierTransformationAudioProcessorEditor::~InverseDiscreteFourierTransformationAudioProcessorEditor()
@@ -64,5 +74,8 @@ void InverseDiscreteFourierTransformationAudioProcessorEditor::resized()
     
     fftSizeSlider.setBounds(100, 300, 150, 75);
     nSinesSlider.setBounds(300, 300, 150, 75);
+    
+    inputMetSlider.setBounds(10, 50, 100, 500);
+    outputMetSlider.setBounds(500, 50, 100, 500);
 }
 
