@@ -116,6 +116,6 @@ private:
     int counterPosition = 0;
     int numSamplesNeeded; //This is calculated at the start using 5seconds * the sampleRate , this ensures that we only ever record 5 seconds of audio
     
-    //==============================================================================
+     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InverseDiscreteFourierTransformationAudioProcessor)
 };

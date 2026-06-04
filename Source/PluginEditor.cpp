@@ -11,7 +11,7 @@
 
 //==============================================================================
 InverseDiscreteFourierTransformationAudioProcessorEditor::InverseDiscreteFourierTransformationAudioProcessorEditor (InverseDiscreteFourierTransformationAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p), audioCache(2) , originalAudioThumbnail(512, formatManager, audioCache) , transAudioThumbnail(512, formatManager, audioCache)
+    : AudioProcessorEditor (&p), audioProcessor (p), audioCache(2) , originalAudioThumbnail(512, formatManager, audioCache) , transAudioThumbnail(512, formatManager, audioCache) 
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
