@@ -14,8 +14,10 @@ public:
         setColour(juce::ResizableWindow::backgroundColourId, juce::Colours::black);
         setColour(juce::Label::textColourId, juce::Colours::white);
         setColour(juce::Slider::textBoxTextColourId, juce::Colours::white);
+        setColour(juce::Slider::textBoxOutlineColourId , juce::Colours::black);
         setColour(juce::GroupComponent::outlineColourId, juce::Colours::white);
         setColour(juce::GroupComponent::textColourId, juce::Colours::white);
+
         
         setColour(juce::PopupMenu::backgroundColourId, juce::Colours::black);
         setColour(juce::PopupMenu::textColourId, juce::Colours::white);
@@ -30,9 +32,9 @@ public:
     }
     
     
-    juce::Font getLabelFont(juce::Label&) override { return bitcount.withHeight(14.0f); }
+    juce::Font getLabelFont(juce::Label&) override { return bitcount.withHeight(20.0f); }
     juce::Font getComboBoxFont(juce::ComboBox&) override { return bitcount.withHeight(14.0f); }
-    juce::Font getTextButtonFont(juce::TextButton&, int) override { return bitcount.withHeight(14.0f); }
+    juce::Font getTextButtonFont(juce::TextButton&, int) override { return bitcount.withHeight(25.0f); }
     
     void drawGroupComponentOutline (juce::Graphics& g, int width, int height, const juce::String& text, const juce::Justification& position, juce::GroupComponent& group) override{
         
@@ -149,7 +151,7 @@ public:
                 
             }
 
-            //Two value and threeval value handling situations 
+            //Two value and threeval value handling situations
             Path valueTrack;
             Point<float> minPoint, maxPoint, thumbPoint;
 

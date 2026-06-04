@@ -166,6 +166,7 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
         
         newRecording = false;
         transferFuncComplete = true;
+        ifftFinishedBroadcaster.sendChangeMessage();
     }
     
     //If the audio is in its playback state then clear the buffer and pass the output buffer through to the main audio buffer
@@ -287,6 +288,7 @@ std::vector<float> InverseDiscreteFourierTransformationAudioProcessor::transform
         
     }
     
+
     return finalAudioIFFT;
 }
 
@@ -327,6 +329,7 @@ void InverseDiscreteFourierTransformationAudioProcessor::recordIncoming(juce::Au
         
         if(counterPosition >= numSamplesNeeded ){//The buffer is fully filled and no longe needs any more samples inputted
             DBG("Recording finished");
+            recordingFinishedBroadcaster.sendChangeMessage();
             recordingOn = false;
             newRecording = true;
             counterPosition = 0;
@@ -380,5 +383,7 @@ void InverseDiscreteFourierTransformationAudioProcessor::parameterChange(){
     }
     
     newRecording = true;
-    playbackOn = false; 
+    playbackOn = false;
+    ifftFinishedBroadcaster.sendChangeMessage();
+    
 }

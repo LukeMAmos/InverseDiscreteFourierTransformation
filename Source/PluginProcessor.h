@@ -59,9 +59,32 @@ public:
     void onStartPlayback();
     void parameterChange();
     
+    const std::vector<float>& getOutBuffer(){
+        return outputBuffer;
+    }
+    
+    int getOutSize(){
+        return (int)std::size(outputBuffer);
+    }
+    
+    const std::vector<float>&  getOriginalAudioBuffer(){
+        return recordedSamples;
+    }
+    
+    int getOriginalAudioSize(){
+        return (int)std::size(recordedSamples);
+    }
+    
     juce::AudioProcessorValueTreeState apvts;
     
+    
+    //Change broadcasters
+    juce::ChangeBroadcaster recordingFinishedBroadcaster;
+    juce::ChangeBroadcaster ifftFinishedBroadcaster;
+    
 private:
+    
+
     
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
@@ -76,7 +99,7 @@ private:
 
     int numTopMag = 1024;
     
-    int nSeconds = 1; 
+    int nSeconds = 5; 
     int fftSize = 2048;
     FFT fourierTransform;
     IFFT inversseFourierTransform;
