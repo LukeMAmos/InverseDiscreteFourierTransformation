@@ -97,10 +97,10 @@ private:
     
     std::vector<float> finalAudioIFFT;
 
-    int numTopMag = 1024;
+    std::atomic<int> numTopMag = 1024;
     
     int nSeconds = 5; 
-    int fftSize = 2048;
+    std::atomic<int> fftSize = 2048;
     FFT fourierTransform;
     IFFT inversseFourierTransform;
     
@@ -112,6 +112,7 @@ private:
     bool newRecording = false; 
     bool playbackOn = false;
     bool transferFuncComplete = false;
+    bool waitingToUpdate = false; 
     
     int counterPosition = 0;
     int numSamplesNeeded; //This is calculated at the start using 5seconds * the sampleRate , this ensures that we only ever record 5 seconds of audio

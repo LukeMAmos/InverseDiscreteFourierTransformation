@@ -172,7 +172,13 @@ void InverseDiscreteFourierTransformationAudioProcessor::processBlock (juce::Aud
     //If the audio is in its playback state then clear the buffer and pass the output buffer through to the main audio buffer
     if(playbackOn)
         playbackAudio(buffer);
+    
+    if(!playbackOn && !newRecording && waitingToUpdate){ //If the data isnt currently being used and we are waiting to update
         
+        parameterChange();
+        
+        waitingToUpdate = false; 
+    }
 
 }
 
@@ -369,19 +375,24 @@ void InverseDiscreteFourierTransformationAudioProcessor::playbackAudio(juce::Aud
 
 void InverseDiscreteFourierTransformationAudioProcessor::parameterChange(){
     
-    fftSize = (int)apvts.getRawParameterValue("FFTSIZE")->load();
-    fourierTransform.prepare(fftSize, getSampleRate());
-    inversseFourierTransform.prepare(fftSize, getSampleRate());
-    
-    numTopMag = (int)apvts.getRawParameterValue("NUMSINE")->load();
-    
-    synHannWindow.resize(fftSize, 0.0f);
-    for(int i = 0 ; i < synHannWindow.size() ; i ++){
+    if(!newRecording){ //Want to ensure that if we are either currently recording or currently processing that the change doesnt go through , this should wait until its next ready
+        fftSize = (int)apvts.getRawParameterValue("FFTSIZE")->load();
+        fourierTransform.prepare(fftSize, getSampleRate());
+        inversseFourierTransform.prepare(fftSize, getSampleRate());
         
-        synHannWindow[i] = 0.5 * (1 - std::cos((2 * M_PI) * i / (synHannWindow.size()-1)));
+        numTopMag = (int)apvts.getRawParameterValue("NUMSINE")->load();
+        
+        synHannWindow.resize(fftSize, 0.0f);
+        for(int i = 0 ; i < synHannWindow.size() ; i ++){
+            
+            synHannWindow[i] = 0.5 * (1 - std::cos((2 * M_PI) * i / (synHannWindow.size()-1)));
+            
+        }
+    }else{ //This means that the program is currently recording or processing a sample we should wait until this is complete then update the value
+        
+        waitingToUpdate = true;
         
     }
-    
     newRecording = true;
     playbackOn = false;
     ifftFinishedBroadcaster.sendChangeMessage();

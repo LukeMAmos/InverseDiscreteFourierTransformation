@@ -76,6 +76,7 @@ void InverseDiscreteFourierTransformationAudioProcessorEditor::paint (juce::Grap
     
     auto transRect = juce::Rectangle<int>(100, 450, 400, 150);
     transAudioThumbnail.drawChannel(g, transRect, 0.0f,( audioProcessor.getOutSize() / audioProcessor.getSampleRate() ), 0, 0.9);
+    
 }
 
 void InverseDiscreteFourierTransformationAudioProcessorEditor::resized()
